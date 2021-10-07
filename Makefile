@@ -1,7 +1,8 @@
 SHELL=/bin/bash
 
 create-environment:
-	virtualenv -p python3.8 .venv
+	virtualenv .venv
+	source .venv/bin/activate
 	pip install -r requirements.txt
 
 format-code:

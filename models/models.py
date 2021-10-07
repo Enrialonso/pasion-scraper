@@ -28,12 +28,22 @@ class Advertisements(Base):
     id_ad = Column(name="id_ad", type_=String(50))
     title = Column(name="title", type_=String(1500))
     text = Column(name="text", type_=Text)
+    listed = Column(name="listed", type_=Integer())
+    phone_showed = Column(name="phone_showed", type_=Integer())
+    email_sent = Column(name="email_sent", type_=Integer())
+    shared = Column(name="shared", type_=Integer())
+    add_followers = Column(name="add_followers", type_=Integer())
+    renew = Column(name="renew", type_=Integer())
     phone = Column(name="phone", type_=String(1500))
     scraping_date = Column(name="scraping_date", type_=Date)
 
 
-engine = create_engine("sqlite:///../db.sqlite")
+def create_db():
+    engine = create_engine("sqlite:///../db.sqlite")
+    session = sessionmaker()
+    session.configure(bind=engine)
+    Base.metadata.create_all(engine)
 
-session = sessionmaker()
-session.configure(bind=engine)
-Base.metadata.create_all(engine)
+
+if __name__ == '__main__':
+    create_db()
