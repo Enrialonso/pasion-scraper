@@ -54,8 +54,8 @@ RUN apt-get install -y gstreamer1.0-libav \
     libatspi2.0-0
 
 #RUN apt-get install python3.8-dev -y
-RUN pip install playwright==1.15.3 requests==2.26.0 SQLAlchemy==1.4.25
-RUN playwright install
+RUN pip install playwright==0.162.2 requests==2.26.0 SQLAlchemy==1.4.25
+RUN python -m playwright install
 
 COPY . /app
 
