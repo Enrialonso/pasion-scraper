@@ -2,12 +2,13 @@ import requests
 
 PROXY_URL = "https://proxylist.geonode.com/api/proxy-list?page=%s"
 
+
 def main():
     proxy_list = list()
     for index in range(40):
         print(f"index: {index}")
         proxy_json = requests.get(PROXY_URL % index)
-        proxy_list += [{"ip": item["ip"], "port": item.get("port")}for item in proxy_json.json()["data"]]
+        proxy_list += [{"ip": item["ip"], "port": item.get("port")} for item in proxy_json.json()["data"]]
 
     print(len(proxy_list))
     for proxy in proxy_list:
@@ -23,6 +24,5 @@ def main():
             print(f"ERROR: {error}")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

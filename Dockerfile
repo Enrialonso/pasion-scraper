@@ -1,62 +1,39 @@
-FROM ubuntu:bionic
+FROM python:3.9.2-buster
 
-# === INSTALL Node.js ===
+# Install Chromium and node.js for arm
+RUN apt-get update && \
+    apt-get install -y \
+    chromium \
+    nodejs
 
-# Install node14
-RUN apt-get update && apt-get install -y curl && \
-    curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get install -y nodejs
+RUN mkdir /browsers
+WORKDIR /browsers
 
-# Upgrade to NPM7 (see https://github.com/microsoft/playwright/pull/8915)
-RUN npm install -g npm@7
+# Download playwright for linux x86_64
+RUN wget https://files.pythonhosted.org/packages/b7/fd/a755971645836850765149e212ccc6a9756494ea438ac0a9efec4f5f9002/playwright-1.9.2-py3-none-manylinux1_x86_64.whl
 
-# Feature-parity with node.js base images.
-RUN apt-get update && apt-get install -y --no-install-recommends git ssh && \
-    npm install -g yarn
+# Rename it so that it can be installed on arm
+RUN mv playwright-1.9.2-py3-none-manylinux1_x86_64.whl playwright-1.9.2-py3-none-any.whl
 
-# Create the pwuser (we internally create a symlink for the pwuser and the root user)
-RUN adduser pwuser
+RUN pip install playwright-1.9.2-py3-none-any.whl
 
-# Install Python 3.8
+# replace the node binary provided by playwright with a symlink to the version we just installed.
+RUN rm /usr/local/lib/python3.9/site-packages/playwright/driver/node && \
+    ln -s /usr/bin/node /usr/local/lib/python3.9/site-packages/playwright/driver/node
 
-RUN apt-get update && apt-get install -y python3.8 python3-pip python3.8-dev && \
-    update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3 1 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+# create the hierarchy expected by playwright to find chrome
+RUN mkdir -p /browsers/chromium-854489/chrome-linux
+# Add a symlink to the chromium binary we just installed.
+RUN ln -s /usr/bin/chromium /browsers/chromium-854489/chrome-linux/chrome
+# ask playwright to search chrome in this folder
+ENV PLAYWRIGHT_BROWSERS_PATH=/browsers
 
-RUN apt-get install -y gstreamer1.0-libav \
-    libnss3-tools \
-    libatk-bridge2.0-0 \
-    libcups2-dev \
-    libxkbcommon-x11-0 \
-    libxcomposite-dev \
-    libxrandr2 \
-    libgbm-dev \
-    libgtk-3-0 \
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxcb1 \
-    libxkbcommon0 \
-    libx11-6 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    libatspi2.0-0
-
-#RUN apt-get install python3.8-dev -y
-RUN pip install playwright==0.162.2 requests==2.26.0 SQLAlchemy==1.4.25
-RUN python -m playwright install
-
+# Copy the test file
+RUN mkdir /app
+WORKDIR /app
 COPY . /app
 
-CMD python /app/app.py
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# CMD [ "python3.9", "get_categories_and_cities.py" ]

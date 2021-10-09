@@ -1,0 +1,11 @@
+.venv/
+.dockerignore
+.git
+LICENSE
+README.md
+Dockerfile
+.idea
+.gitignore
+pyproject.toml
+Makefile
+db

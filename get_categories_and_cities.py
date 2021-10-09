@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import Playwright, sync_playwright
 
 from models.models import Categories, Cities
@@ -45,4 +47,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print(os.listdir())
     main()

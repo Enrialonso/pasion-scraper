@@ -4,10 +4,7 @@ from datetime import datetime as dt
 from playwright.sync_api import Playwright, sync_playwright, TimeoutError
 
 from models.models import Categories, Cities
-from utils.utils import create_sql_session, get_data_ad_load_on_table
-from sqlalchemy.exc import OperationalError
-from models.models import create_db
-from get_categories_and_cities import main as get_categories_and_cities
+from utils.utils import create_sql_session, get_and_save_ad_id
 
 scraping_date = dt.now()
 
@@ -33,14 +30,14 @@ def run(playwright: Playwright, config) -> None:
 
     index = 0
     while True:
-        get_data_ad_load_on_table(page, session, config["category"], config["city"], scraping_date)
+        get_and_save_ad_id(page, session, config["category"], config["city"], scraping_date)
         try:
             button = page.wait_for_selector("td >> div >> a:text('Siguiente')", timeout=500)
             button.click()
         except TimeoutError:
             break
         index += 1
-        if index == 6:
+        if index == 2:
             break
 
     context.close()
@@ -55,19 +52,14 @@ def worker(config):
 def main():
     session = create_sql_session()
     config_workers = []
-    try:
-        data = session.query(Categories).all()
-    except OperationalError:
-        create_db()
-        get_categories_and_cities()
-        data = session.query(Categories).all()
+    data = session.query(Categories).all()
 
     for category in data:
         for city in session.query(Cities).all():
             if category.value and city.value:
                 config_workers.append({"category": category.value, "city": city.value})
 
-    with PoolExecutor(max_workers=5) as executor:
+    with PoolExecutor(max_workers=4) as executor:
         for _ in executor.map(worker, config_workers):
             pass
 

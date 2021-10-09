@@ -14,7 +14,7 @@ def clean_text(text: str):
 
 
 def create_sql_session():
-    engine = create_engine("sqlite:///db.sqlite")
+    engine = create_engine("sqlite:///db/db.sqlite")
     session = sessionmaker()
     session.configure(bind=engine)
     return session()
@@ -50,6 +50,16 @@ def get_data_ad_load_on_table(page, session, category, city, scraping_date):
         )
         session.add(ad)
         session.commit()
+
+
+def get_and_save_ad_id(page, session, category, city, scraping_date):
+    anuncios = page.query_selector_all("//*[@class='x1']")
+    list_anuncios_id = [clean_text(anuncio.query_selector("//*[@class='x5']").inner_text()) for anuncio in anuncios]
+
+    session.bulk_save_objects(
+        [Advertisements(category=category, city=city, id_ad=id, scraping_date=scraping_date) for id in list_anuncios_id]
+    )
+    session.commit()
 
 
 def extract_phones(html):

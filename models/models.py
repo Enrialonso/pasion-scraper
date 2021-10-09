@@ -39,11 +39,11 @@ class Advertisements(Base):
 
 
 def create_db():
-    engine = create_engine("sqlite:///../db.sqlite")
+    engine = create_engine("sqlite:///../db/db.sqlite")
     session = sessionmaker()
     session.configure(bind=engine)
     Base.metadata.create_all(engine)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     create_db()

@@ -1,8 +1,12 @@
-from playwright import sync_playwright
+import os
+
+from playwright.sync_api import sync_playwright
+
+print(os.listdir())
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.newPage()
-    page.goto('https://pasion.com')
+    browser = p.chromium.launch()
+    page = browser.new_page()
+    page.goto("http://playwright.dev")
     print(page.title())
     browser.close()
