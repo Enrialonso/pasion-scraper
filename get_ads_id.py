@@ -36,9 +36,9 @@ def run(playwright: Playwright, config) -> None:
             button.click()
         except TimeoutError:
             break
-        index += 1
-        if index == 2:
-            break
+        # index += 1
+        # if index == 2:
+        #     break
 
     context.close()
     browser.close()
