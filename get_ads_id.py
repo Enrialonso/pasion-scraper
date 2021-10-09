@@ -1,3 +1,4 @@
+import os
 from concurrent.futures import ThreadPoolExecutor as PoolExecutor
 from datetime import datetime as dt
 
@@ -10,6 +11,8 @@ scraping_date = dt.now()
 
 
 def run(playwright: Playwright, config) -> None:
+    test_script = os.getenv("TEST_SCRIPT", "NO")
+    print(f"TEST_SCRIPT = {test_script}")
     session = create_sql_session()
     browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
@@ -36,9 +39,9 @@ def run(playwright: Playwright, config) -> None:
             button.click()
         except TimeoutError:
             break
-        # index += 1
-        # if index == 2:
-        #     break
+        index += 1
+        if index == 2 and test_script == "YES":
+            break
 
     context.close()
     browser.close()
@@ -50,8 +53,9 @@ def worker(config):
 
 
 def main():
+    config_workers, count_workers = [], int(float(os.getenv("COUNT_WORKERS", 2)))
+    print(f"COUNT_WORKERS = {count_workers}")
     session = create_sql_session()
-    config_workers = []
     data = session.query(Categories).all()
 
     for category in data:
@@ -59,7 +63,7 @@ def main():
             if category.value and city.value:
                 config_workers.append({"category": category.value, "city": city.value})
 
-    with PoolExecutor(max_workers=4) as executor:
+    with PoolExecutor(max_workers=count_workers) as executor:
         for _ in executor.map(worker, config_workers):
             pass
 
