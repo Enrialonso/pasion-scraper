@@ -21,7 +21,6 @@ build-image:
 
 run-bot:
 	docker run --rm -it --entrypoint "/bin/bash" --name pasion-bot -v $(path_db):/app/db pasion-bot -c "python get_categories_and_cities.py"
-	sleep 60
 	docker run --rm -it --entrypoint "/bin/bash" --name pasion-bot -e COUNT_WORKERS=$(count_workers) -e TEST_SCRIPT=$(test_script) -v $(path_db):/app/db pasion-bot -c "python get_ads_id.py"
 
 build-and-run:
